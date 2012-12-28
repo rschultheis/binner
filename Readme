@@ -1,0 +1,17 @@
+This is a simple Ruby script for doing 'binning' which is putting numbers into bins.
+
+Run it like this:
+    ruby binner.rb [excel input file name]
+
+for instance:
+    ruby binner.rb data/November\ Measurements.xls
+
+
+To setup:
+- install ruby (requires 1.8.7 or higher, determine that by running 'ruby -v').  Note macs should have this already.
+- install gems:
+    bundle install
+- that should be all
+
+
+
