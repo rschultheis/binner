@@ -37,8 +37,14 @@ while (curBin <= MaxBin)
   curBin += BinSize
 end
 
+#check that all values went into a bin
+if (bins.values.map{ |vs| vs.length}.inject(:+) != data.length )
+  puts "ERROR:  not all values went into a bin"
+  exit
+end
+
 bins.keys.sort.each do |key|
-  puts key.to_s + ': ' + bins[key].length.to_s
+  puts key.to_s + ': ' + 'X' * bins[key].length
 end
 
 
