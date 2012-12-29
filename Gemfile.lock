@@ -39,6 +39,7 @@ GEM
     system_timer (1.2.4)
     todonotes (0.1.1)
       log4r
+    writeexcel (0.6.16)
 
 PLATFORMS
   ruby
@@ -46,3 +47,4 @@ PLATFORMS
 DEPENDENCIES
   roo
   system_timer
+  writeexcel

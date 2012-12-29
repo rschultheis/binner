@@ -1,52 +1,70 @@
 require 'lib/excel'
+require 'lib/array_stats'
 
 #configuration
 BinSize = 0.1
-ErrorSize = 0.01
-MinBin = 0.5
+MinBin = 0.3
 MaxBin = 4.0
 
 
 #read and sort the data
-input_filename = ARGV[0]
+data = {}
+data[:input_filename] = ARGV[0]
+
 #get the data out of the excel file
-data = ExcelIO.read_length_data(input_filename)
+data[:raw] = ExcelIO.read_length_data(data[:input_filename])
+data[:length] = data[:raw].length
+
 #sort the data
-data.sort!
-puts "read '#{data.length}' values out of '#{input_filename}"
-puts "min: #{data.first}"
-puts "max: #{data.last}"
+data[:sorted] = data[:raw].sort
+
+#basic stats
+data[:min] = data[:sorted].first
+data[:max] = data[:sorted].last
+
+#output input summary
+puts "read '#{data[:length]}' values out of '#{data[:input_filename]}'"
+puts "min: #{data[:min]}"
+puts "max: #{data[:max]}"
 puts ''
 
 
 #put data into bins
-bins = {}
+data[:bins] = {}
 curBin = MinBin
 data_idx = 0
 while (curBin <= MaxBin)
   binMax = curBin + BinSize
-  bin = []
+  values = []
  
-  while ((data_idx < data.length) && (data[data_idx] < binMax))
-    bin << data[data_idx]
+  while ((data_idx < data[:length]) && (data[:sorted][data_idx] < binMax))
+    values << data[:sorted][data_idx]
     data_idx += 1
   end
   
-  bin_label = "#{"%0.2f" % curBin}-#{"%0.2f" % (binMax - ErrorSize)}" 
-  bins[bin_label] = bin
+  bin_label = "#{"%0.2f" % curBin} -> #{"%0.2f" % binMax}" 
+  data[:bins][bin_label] = { :values => values }
   curBin += BinSize
 end
 
-#check that all values went into a bin
-if (bins.values.map{ |vs| vs.length}.inject(:+) != data.length )
-  puts "ERROR:  not all values went into a bin"
-  exit
+
+#process the bins
+data[:bins].each_pair do |bin_label, bin|
+  bin[:length] = bin[:values].length
+  #calculate the frequency
+  bin[:frequency] = bin[:length].to_f / data[:length].to_f
+  #standard deviation
+  bin[:standard_deviation] = bin[:values].standard_deviation
+  #standard_error
+  bin[:standard_error] = bin[:standard_deviation] / Math.sqrt(data[:length])
 end
 
-bins.keys.sort.each do |key|
-  puts key.to_s + ': ' + 'X' * bins[key].length
-end
+#output the bins
 
+#output_filename = 'output.xls'
+data[:output_filename] = 'processed_' + File.basename(data[:input_filename]).gsub(/\s/,'_').downcase
+ExcelIO.write_bin_file data, data[:output_filename]
 
+puts "output written to '#{data[:output_filename]}'"
 
 
