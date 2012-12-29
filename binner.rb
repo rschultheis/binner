@@ -2,7 +2,7 @@ require 'lib/excel'
 require 'lib/array_stats'
 
 #configuration
-BinSize = 0.1
+BinSize = 0.10
 MinBin = 0.3
 MaxBin = 4.0
 
@@ -31,10 +31,14 @@ puts ''
 
 #put data into bins
 data[:bins] = {}
-curBin = MinBin
 data_idx = 0
+bin_idx = 0
+curBin = MinBin
 while (curBin <= MaxBin)
-  binMax = curBin + BinSize
+  #set the bin floor and ceiling
+  #set in a way that corrects for floating point slop, by truncating into string and casting back into a float
+  curBin = ("%0.4f" % (MinBin + (bin_idx * BinSize))).to_f
+  binMax = ("%0.4f" % (curBin + BinSize)).to_f
   values = []
  
   while ((data_idx < data[:length]) && (data[:sorted][data_idx] < binMax))
@@ -44,7 +48,8 @@ while (curBin <= MaxBin)
   
   bin_label = "#{"%0.2f" % curBin} -> #{"%0.2f" % binMax}" 
   data[:bins][bin_label] = { :values => values }
-  curBin += BinSize
+
+  bin_idx += 1
 end
 
 
@@ -54,16 +59,16 @@ data[:bins].each_pair do |bin_label, bin|
   #calculate the frequency
   bin[:frequency] = bin[:length].to_f / data[:length].to_f
   #standard deviation
-  bin[:standard_deviation] = bin[:values].standard_deviation
-  #standard_error
-  bin[:standard_error] = bin[:standard_deviation] / Math.sqrt(data[:length])
+  bin[:sample_standard_deviation] = bin[:values].sample_standard_deviation
+  #sample_standard_error
+  bin[:standard_error] = bin[:sample_standard_deviation] / Math.sqrt(data[:length])
 end
 
 #output the bins
 
 #output_filename = 'output.xls'
 data[:output_filename] = 'processed_' + File.basename(data[:input_filename]).gsub(/\s/,'_').downcase
-ExcelIO.write_bin_file data, data[:output_filename]
+ExcelIO.write_bin_file data
 
 puts "output written to '#{data[:output_filename]}'"
 

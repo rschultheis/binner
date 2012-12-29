@@ -46,7 +46,7 @@ module ExcelIO
     worksheet.write(0, 0, 'Bin', header_format)
     worksheet.write(0, 1, 'Count', header_format)
     worksheet.write(0, 2, 'Frequency', header_format)
-    worksheet.write(0, 3, 'Std Dev', header_format)
+    worksheet.write(0, 3, 'Sample Std Dev', header_format)
     worksheet.write(0, 4, 'Std Err', header_format)
 
     row = 1
@@ -54,17 +54,36 @@ module ExcelIO
       worksheet.write(row, 0, bin, header_format)
 
       worksheet.write(row, 1, data[:bins][bin][:length])
-      worksheet.write(row, 2, "%0.5f" % data[:bins][bin][:frequency])
-      worksheet.write(row, 3, "%0.5f" % data[:bins][bin][:standard_deviation])
-      worksheet.write(row, 4, "%0.5f" % data[:bins][bin][:standard_error])
+      worksheet.write(row, 2, "%0.3f" % data[:bins][bin][:frequency])
+      worksheet.write(row, 3, "%0.3f" % data[:bins][bin][:sample_standard_deviation])
+      worksheet.write(row, 4, "%0.3f" % data[:bins][bin][:standard_error])
+
+      row += 1
+    end
+  end
+
+  def self.write_bar_chart_sheet workbook, data
+    worksheet = workbook.add_worksheet 'bin_bar_chart'
+
+    header_format = workbook.add_format
+    header_format.set_bold
+
+    worksheet.write(0, 0, 'Bin', header_format)
+    worksheet.write(0, 1, 'Frequency x 100', header_format)
+
+    row = 1
+    data[:bins].keys.sort.each do |bin|
+      worksheet.write(row, 0, bin, header_format)
+
+      worksheet.write(row, 1, "%i" % (data[:bins][bin][:frequency] * 100.0))
 
       row += 1
     end
   end
 
 
-  def self.write_bin_file data, filename
-    workbook = WriteExcel.new filename
+  def self.write_bin_file data
+    workbook = WriteExcel.new data[:output_filename]
 
     #write raw & sorted data
     write_array_to_sheet(workbook, 'raw_data', data[:raw])
@@ -72,6 +91,8 @@ module ExcelIO
     write_bin_values(workbook, data)
 
     write_bin_stats(workbook, data)
+
+    #write_bar_chart_sheet(workbook, data)
 
     workbook.close    
   end
