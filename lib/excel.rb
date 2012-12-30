@@ -43,6 +43,9 @@ module ExcelIO
     header_format = workbook.add_format
     header_format.set_bold
 
+    float_format = workbook.add_format 
+    float_format.set_num_format('0.0000')
+
     worksheet.write(0, 0, 'Bin', header_format)
     worksheet.write(0, 1, 'Count', header_format)
     worksheet.write(0, 2, 'Frequency', header_format)
@@ -54,26 +57,22 @@ module ExcelIO
       worksheet.write(row, 0, bin, header_format)
 
       worksheet.write(row, 1, data[:bins][bin][:length])
-      worksheet.write(row, 2, data[:bins][bin][:frequency])
-      worksheet.write(row, 3, data[:bins][bin][:sample_standard_deviation])
-      worksheet.write(row, 4, data[:bins][bin][:standard_error])
+      worksheet.write(row, 2, data[:bins][bin][:frequency], float_format)
+      worksheet.write(row, 3, data[:bins][bin][:sample_standard_deviation], float_format)
+      worksheet.write(row, 4, data[:bins][bin][:standard_error], float_format)
 
       row += 1
     end
   end
 
   def self.write_charts workbook, data
-
-    hist = workbook.add_chart(:name => 'frequency_histogram', :type => 'Chart::Column', :dx => '12.05')
- 
+    hist = workbook.add_chart(:name => 'frequency_histogram', :type => 'Chart::Column')
     num_bins = data[:bins].length
-
     hist.add_series(
       :categories  => "=bin_stats!$A$2:$A$#{num_bins}",
       :values      => "=bin_stats!$C$2:$C$#{num_bins}",
       :name        => "Frequency"
     )
-
   end
 
 
