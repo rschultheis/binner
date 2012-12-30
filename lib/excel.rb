@@ -92,7 +92,7 @@ module ExcelIO
 
     write_bin_stats(workbook, data)
 
-    #write_bar_chart_sheet(workbook, data)
+    write_bar_chart_sheet(workbook, data)
 
     workbook.close    
   end

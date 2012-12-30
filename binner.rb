@@ -61,7 +61,7 @@ data[:bins].each_pair do |bin_label, bin|
   #standard deviation
   bin[:sample_standard_deviation] = bin[:values].sample_standard_deviation
   #sample_standard_error
-  bin[:standard_error] = bin[:sample_standard_deviation] / Math.sqrt(data[:length])
+  bin[:standard_error] = bin[:values].standard_error_of_the_mean
 end
 
 #output the bins

@@ -20,6 +20,11 @@ class Array
     Math.sqrt( sum / (self.length - 1))
   end
 
+  def standard_error_of_the_mean
+    return 0.0 if self.length < 2
+    (self.sample_standard_deviation / Math.sqrt(self.length))
+  end
+
 end
 
 #run unit tests by running this file directly
