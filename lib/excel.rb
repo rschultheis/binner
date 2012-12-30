@@ -54,31 +54,26 @@ module ExcelIO
       worksheet.write(row, 0, bin, header_format)
 
       worksheet.write(row, 1, data[:bins][bin][:length])
-      worksheet.write(row, 2, "%0.3f" % data[:bins][bin][:frequency])
-      worksheet.write(row, 3, "%0.3f" % data[:bins][bin][:sample_standard_deviation])
-      worksheet.write(row, 4, "%0.3f" % data[:bins][bin][:standard_error])
+      worksheet.write(row, 2, data[:bins][bin][:frequency])
+      worksheet.write(row, 3, data[:bins][bin][:sample_standard_deviation])
+      worksheet.write(row, 4, data[:bins][bin][:standard_error])
 
       row += 1
     end
   end
 
-  def self.write_bar_chart_sheet workbook, data
-    worksheet = workbook.add_worksheet 'bin_bar_chart'
+  def self.write_charts workbook, data
 
-    header_format = workbook.add_format
-    header_format.set_bold
+    hist = workbook.add_chart(:name => 'frequency_histogram', :type => 'Chart::Column', :dx => '12.05')
+ 
+    num_bins = data[:bins].length
 
-    worksheet.write(0, 0, 'Bin', header_format)
-    worksheet.write(0, 1, 'Frequency x 100', header_format)
+    hist.add_series(
+      :categories  => "=bin_stats!$A$2:$A$#{num_bins}",
+      :values      => "=bin_stats!$C$2:$C$#{num_bins}",
+      :name        => "Frequency"
+    )
 
-    row = 1
-    data[:bins].keys.sort.each do |bin|
-      worksheet.write(row, 0, bin, header_format)
-
-      worksheet.write(row, 1, "%i" % (data[:bins][bin][:frequency] * 100.0))
-
-      row += 1
-    end
   end
 
 
@@ -92,7 +87,7 @@ module ExcelIO
 
     write_bin_stats(workbook, data)
 
-    write_bar_chart_sheet(workbook, data)
+    write_charts(workbook, data)
 
     workbook.close    
   end
