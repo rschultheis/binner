@@ -1,17 +1,16 @@
-require 'lib/excel'
-require 'lib/array_stats'
-
 #configuration
 BinSize = 0.10
 MinBin = 0.3
 MaxBin = 4.0
 
-
-#read and sort the data
-data = {}
-data[:input_filename] = ARGV[0]
+#load code outside this file
+$: << File.dirname(__FILE__)
+require 'lib/excel'
+require 'lib/array_stats'
 
 #get the data out of the excel file
+data = {}
+data[:input_filename] = ARGV[0]
 data[:raw] = ExcelIO.read_length_data(data[:input_filename])
 data[:length] = data[:raw].length
 
@@ -40,12 +39,14 @@ while (curBin <= MaxBin)
   curBin = ("%0.4f" % (MinBin + (bin_idx * BinSize))).to_f
   binMax = ("%0.4f" % (curBin + BinSize)).to_f
   values = []
- 
+
+  #put values out of sorted list into the current bin 
   while ((data_idx < data[:length]) && (data[:sorted][data_idx] < binMax))
     values << data[:sorted][data_idx]
     data_idx += 1
   end
   
+  #store the bin
   bin_label = "#{"%0.2f" % curBin} -> #{"%0.2f" % binMax}" 
   data[:bins][bin_label] = { :values => values }
 
@@ -53,7 +54,7 @@ while (curBin <= MaxBin)
 end
 
 
-#process the bins
+#process the bins, calculate bin stats
 data[:bins].each_pair do |bin_label, bin|
   bin[:length] = bin[:values].length
   #calculate the frequency
@@ -66,7 +67,6 @@ end
 
 #output the bins
 
-#output_filename = 'output.xls'
 data[:output_filename] = 'processed_' + File.basename(data[:input_filename]).gsub(/\s/,'_').downcase
 ExcelIO.write_bin_file data
 
